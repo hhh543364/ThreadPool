@@ -20,27 +20,19 @@ Span* CentralCache::GetOneSpan(SpanList& list, size_t size)
 		}
 	}
 
-	//先把这个central cache的桶锁解掉 这样其他线程释放内存对象回来不会堵塞
 	list._mtx.unlock();
 
 
-	//走到这里说没有空闲span了 只能找page cache要
 	PageCache::GetInstance()->_pageMtx.lock();
 	Span* span = PageCache::GetInstance()->NewSpan(SizeClass::NumMovePage(size));
 	span->_isUse = true;
 	span->_objSize = size;
 	PageCache::GetInstance()->_pageMtx.unlock();
 
-	//对获取span进行切分 不需要加锁 因为其他线程这会访问不到span
-
-	//计算span的大块内存的起始地址和大块内存的大小（字节数）
 	char* start = (char*)(span->_pageId << PAGE_SHIFT);
 	size_t bytes = span->_n << PAGE_SHIFT;
 	char* end = start + bytes;
 
-
-	//把大块内存用自由链表连接起来
-	//1.先切一块作为表头 方便尾插
 	span->_freeList = start;
 	start += size;
 	void* tail = span->_freeList;
@@ -55,22 +47,6 @@ Span* CentralCache::GetOneSpan(SpanList& list, size_t size)
 
 	NextObj(tail) = nullptr;
 
-	// 1、条件断点
-	// 2、疑似死循环，可以中断程序，程序会在正在运行的地方停下来
-	//int j = 0;
-	//void* cur = span->_freeList;
-	//while (cur)
-	//{
-	//	cur = NextObj(cur);
-	//	++j;
-	//}
-
-	//if (j != (bytes / size))
-	//{
-	//	int x = 0;
-	//}
-
-	// 切好span以后，需要把span挂到桶里面去的时候，再加锁
 	list._mtx.lock();
 	list.PushFront(span);
 
@@ -105,9 +81,7 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t batchNum, si
 	NextObj(end) = nullptr;
 
 	span->_useCount += actualNum;
-	//缺少这行代码，这会导致span的使用计数不正确，影响内存回收逻辑
 
-	//// 条件断点
 	int j = 0;
 	void* cur = start;
 	while (cur)
@@ -140,8 +114,7 @@ void CentralCache::ReleaseListToSpans(void* start, size_t size)
 		span->_freeList = start;
 		span->_useCount--;
 
-		// 说明span的切分出去的所有小块内存都回来了
-		// 这个span就可以再回收给page cache，pagecache可以再尝试去做前后页的合并
+		
 		if (span->_useCount == 0)
 		{
 			_spanLists[index].Erase(span);
@@ -149,8 +122,6 @@ void CentralCache::ReleaseListToSpans(void* start, size_t size)
 			span->_next = nullptr;
 			span->_prev = nullptr;
 
-			// 释放span给page cache时，使用page cache的锁就可以了
-			// 这时把桶锁解掉
 			_spanLists[index]._mtx.unlock();
 
 			PageCache::GetInstance()->_pageMtx.lock();

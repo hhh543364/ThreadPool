@@ -35,11 +35,7 @@ typedef uintptr_t PAGE_ID;
 #endif//_WIN32
 
 
-//WIN32下只有32可以
-//win64下32和64都可以
 
-
-// 直接去堆上按页申请空间
 inline static void* SystemAlloc(size_t kpage)
 {
 #ifdef _WIN32
@@ -88,21 +84,6 @@ public:
 	{
 		NextObj(end) = _freeList;
 		_freeList = start;
-
-		// 测试验证+条件断点
-		/*int i = 0;
-		void* cur = start;
-		while (cur)
-		{
-			cur = NextObj(cur);
-			++i;
-		}
-
-		if (n != i)
-		{
-			int x = 0;
-		}*/
-
 		_size += n;
 	}
 
@@ -153,40 +134,15 @@ private:
 	size_t _maxSize = 1;
 	size_t _size = 0;
 };
-
-
-
 // 计算对象大小的对齐映射规则
 class SizeClass
 {
 public:
-	// 整体控制在最多10%左右的内碎片浪费
-	// [1,128]					8byte对齐	    freelist[0,16)
-	// [128+1,1024]				16byte对齐	    freelist[16,72)
-	// [1024+1,8*1024]			128byte对齐	    freelist[72,128)
-	// [8*1024+1,64*1024]		1024byte对齐     freelist[128,184)
-	// [64*1024+1,256*1024]		8*1024byte对齐   freelist[184,208)
 
-	/*size_t _RoundUp(size_t size, size_t alignNum)
-	{
-		size_t alignSize;
-		if (size % alignNum != 0)
-		{
-			alignSize = (size / alignNum + 1)*alignNum;
-		}
-		else
-		{
-			alignSize = size;
-		}
-
-		return alignSize;
-	}*/
-	// 1-8 
 	static inline size_t _RoundUp(size_t bytes, size_t alignNum)
 	{
 		return ((bytes + alignNum - 1) & ~(alignNum - 1));
-	}//这个方法很妙
-
+	}
 	static inline size_t RoundUp(size_t size)
 	{
 		if (size <= 128)
@@ -215,27 +171,7 @@ public:
 		}
 	}
 
-	/*size_t _Index(size_t bytes, size_t alignNum)
-	{
-	if (bytes % alignNum == 0)
-	{
-	return bytes / alignNum - 1;
-	}
-	else
-	{
-	return bytes / alignNum;
-	}
-	}*/
-
-	// 1 + 7  8
-	// 2      9
-	// ...
-	// 8      15
-
-	// 9 + 7 16
-	// 10
-	// ...
-	// 16    23
+	
 	static inline size_t _Index(size_t bytes, size_t align_shift)
 	{
 		return ((bytes + (1 << align_shift) - 1) >> align_shift) - 1;
@@ -321,10 +257,7 @@ struct Span
 
 	bool _isUse = false;//是否在被使用
 
-};//但是32位64位不一样
-//这个就要条件编译解决  在common.h文件上里面
-
-//带头双向循环链表
+};
 class SpanList
 {
 public:

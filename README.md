@@ -1,1 +1,2 @@
 # ThreadPool
+本项目旨在实现一个高并发的内存池，其原型参考了google的开源项目tcmalloc，tcmalloc全称为Thread-Caching Malloc，即线程缓存的malloc，它实现了高效的多线程内存管理，可用于替代系统的内存分配相关函数（如malloc、free）。本项目将tcmalloc最核心的框架进行简化，模拟实现了一个属于自己的高并发内存池，主要目的是学习tcmalloc的精华。

@@ -115,7 +115,7 @@ void BenchmarkConcurrentMalloc(size_t ntimes, size_t nworks, size_t rounds)
 
 int main()
 {
-    size_t n = 1000;
+    size_t n = 100;
     cout << "==========================================================" << endl;
     BenchmarkConcurrentMalloc(n, 4, 10);
     cout << endl << endl;

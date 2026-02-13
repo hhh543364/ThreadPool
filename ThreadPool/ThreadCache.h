@@ -21,6 +21,3 @@ private:
 
 // TLS thread local storage是为了fa'm'h'z
 static _declspec(thread) ThreadCache* pTLSThreadCache = nullptr;
-//线程TLS就像是给每个线程发的“员工个人储物柜”
-//——你的东西你自己随便放、随时取，
-//不用担心被同事拿错或弄乱，也不用排队等开公共柜子的锁。

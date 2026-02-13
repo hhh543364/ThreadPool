@@ -22,8 +22,6 @@ void TLSTest()
 {
 	std::thread t1(Alloc1);
 	t1.join();
-	//在 C++ 中，.join() 是 C++11 标准线程库（<thread> 头文件）中 std::thread 类的成员函数。
-	//它的作用是：等待线程结束。
 	std::thread t2(Alloc2);
 	t2.join();
 }
@@ -67,19 +65,6 @@ void TestConcurrentAlloc2()
 	void* p2 = ConcurrentAlloc(8);
 	cout << p2 << endl;
 }
-//
-//void TestAddressShift()
-//{
-//	PAGE_ID id1 = 2000;
-//	PAGE_ID id2 = 2001;
-//	char* p1 = (char*)(id1 << PAGE_SHIFT);
-//	char* p2 = (char*)(id2 << PAGE_SHIFT);
-//	while (p1 < p2)
-//	{
-//		cout << (void*)p1 << ":" << ((PAGE_ID)p1 >> PAGE_SHIFT) << endl;
-//		p1 += 8;
-//	}
-//}
 
 void MultiThreadAlloc1()
 {

@@ -71,9 +71,6 @@ Span* PageCache::NewSpan(size_t k)
 		}
 	}
 
-	// 走到这个位置就说明后面没有大页的span了
-	// 这时就去找堆要一个128页的span
-	//Span* bigSpan = new Span;
 	Span* bigSpan = _spanPool.New();
 	void* ptr = SystemAlloc(NPAGES - 1);
 	bigSpan->_pageId = (PAGE_ID)ptr >> PAGE_SHIFT;

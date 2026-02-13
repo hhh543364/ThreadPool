@@ -37,26 +37,6 @@ static void* ConcurrentAlloc(size_t size)
 	}
 }
 
-//static void* ConcurrentAlloc(size_t size)
-//{
-//	// 正确使用 thread_local，无需检查 nullptr
-//	thread_local static ThreadCache* pTLSThreadCache = nullptr;
-//
-//	if (pTLSThreadCache == nullptr)
-//	{
-//		pTLSThreadCache = new ThreadCache;
-//	}
-//
-//	// 调试输出加锁（可选）
-//	static std::mutex io_mutex;
-//	{
-//		std::lock_guard<std::mutex> lock(io_mutex);
-//		std::cout << std::this_thread::get_id() << ":" << pTLSThreadCache << std::endl;
-//	}
-//
-//	return pTLSThreadCache->Allocate(size);
-//}
-
 static void ConcurrentFree(void* ptr)
 {
 	Span* span = PageCache::GetInstance()->MapObjectToSpan(ptr);

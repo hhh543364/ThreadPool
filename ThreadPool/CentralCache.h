@@ -27,7 +27,7 @@ private:
 	CentralCache()
 	{
 	}
-
+	
 	CentralCache(const CentralCache&) = delete;
 
 	static CentralCache _sInst;
